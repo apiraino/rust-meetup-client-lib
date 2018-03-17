@@ -7,7 +7,7 @@ fn setup() -> MeetupClient {
     let token: &str = &env::var("MEETUP_API_KEY")
         .expect("MEETUP_API_KEY was not found.")
         .to_string();
-    MeetupClient::new(MEETUP_URL, token)
+//    MeetupClient::new(MEETUP_URL, token)
 }
 fn teardown() {
     // undo what you've done in setup()

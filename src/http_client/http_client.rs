@@ -1,5 +1,5 @@
-extern crate reqwest;
-use reqwest::{Error as ReqwestError, Method, Response, Url};
+use reqwest::{Error as ReqwestError, Method, Url};
+use super::response::Response;
 
 #[derive(Debug)]
 pub enum HttpClientError {
@@ -8,7 +8,7 @@ pub enum HttpClientError {
     SendError(ReqwestError),
 }
 
-pub type HttpClientResponse = Result<Response, HttpClientError>;
+pub type HttpClientResponse = Result<Box<Response>, HttpClientError>;
 
 pub trait HttpClient {
     fn request(&self, method: Method, url: Url) -> HttpClientResponse;
