@@ -3,8 +3,7 @@ use reqwest::{Error as ReqwestError, Method, Url};
 extern crate serde;
 extern crate serde_json;
 
-use http_client::http_client::{HttpClient, HttpClientError, HttpClientResponse};
-use http_client::http_client_default::DefaultHttpClient;
+use http_client::{HttpClient, HttpClientError, HttpClientResponse, DefaultHttpClient};
 
 // ref. https://github.com/rust-on-slack/rust-slack-inviter/blob/master/src/slack.rs
 
@@ -33,14 +32,6 @@ pub struct MeetupActivityResponseSerializer {
     pub results: Vec<MeetupResult>,
 }
 
-pub struct MeetupClient {
-    // only the last field of a struct may have a dynamically sized type
-    // Box allocated on the heap rather than the stack
-    // https://rustbyexample.com/std/box.html
-    http_client: Box<HttpClient>,
-    url: Url,
-}
-
 #[derive(Debug)]
 pub enum MeetupClientError {
     RequestError(HttpClientError),
@@ -49,10 +40,15 @@ pub enum MeetupClientError {
 
 // https://www.reddit.com/r/rust/comments/69i105/the_grass_is_always_greener_my_struggles_with_rust/dh71fzh/
 // https://www.reddit.com/r/rust/comments/69i105/the_grass_is_always_greener_my_struggles_with_rust/dh6ryh0/
-type ClientResult<T> = Result<T, MeetupClientError>;
+pub type ClientResult<T> = Result<T, MeetupClientError>;
+
+pub struct MeetupClient {
+    http_client: Box<HttpClient>,
+    url: Url,
+}
 
 impl MeetupClient {
-    pub fn new(&self, http_client: Box<HttpClient>, base_url: &str, token: &str) -> MeetupClient {
+    pub fn new(http_client: Box<HttpClient>, base_url: &str, token: &str) -> Self {
         let mut url = Url::parse(base_url).unwrap();
         url.query_pairs_mut().append_pair("key", token);
         MeetupClient { http_client, url }
@@ -60,7 +56,7 @@ impl MeetupClient {
 
     pub fn create_default(&self, base_url: &str, token: &str) -> MeetupClient {
         let boxed_client: Box<DefaultHttpClient> = Box::new(DefaultHttpClient {});
-        self.new(boxed_client, base_url, token)
+        MeetupClient::new(boxed_client, base_url, token)
     }
 
     pub fn get_activity(&self, member_id: &str) -> ClientResult<MeetupActivityResponseSerializer> {
